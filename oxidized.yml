@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oxidized-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oxidized-app
+  revisionHistoryLimit: 5
+  progressDeadlineSeconds: 300
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: oxidized-app
+    spec:
+      containers:
+      - name: oxidized
+        image: ghcr.io/mapickett/oxidized:latest
+        ports:
+        - containerPort: 8888
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8888
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-oxidized
+spec:
+  type: ClusterIP
+  selector:
+    app: oxidized-app
+  ports:
+  - port: 8888
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ig-oxidized
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  rules:
+  - host: oxidized.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: svc-oxidized
+            port:
+              number: 8888
