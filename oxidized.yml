@@ -51,7 +51,7 @@ metadata:
     traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
   rules:
-  - host: oxidized.local
+  - host: oxidized.lab.local
     http:
       paths:
       - path: /
