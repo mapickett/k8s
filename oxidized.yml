@@ -1,12 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: oxidized-deploy
+  name: oxidized
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: oxidized-app
+      app: oxidized
   revisionHistoryLimit: 5
   progressDeadlineSeconds: 300
   minReadySeconds: 10
@@ -18,7 +18,7 @@ spec:
   template:
     metadata:
       labels:
-        app: oxidized-app
+        app: oxidized
     spec:
       containers:
       - name: oxidized
@@ -35,21 +35,22 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: svc-oxidized
+  name: oxidized-svc
 spec:
   type: ClusterIP
   selector:
-    app: oxidized-app
+    app: oxidized
   ports:
   - port: 8888
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ig-oxidized
+  name: oxidized-ing
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
+  ingressClassName: traefik
   rules:
   - host: oxidized.lab.local
     http:
@@ -58,6 +59,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: svc-oxidized
+            name: oxidized-svc
             port:
               number: 8888
